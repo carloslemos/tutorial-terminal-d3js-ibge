@@ -5,7 +5,9 @@ Tutorial de como fazer mapas apenas com a linha de comando em D3js com os dados 
 Pegue os dados relativos a malha censitária do Rio de Janeiro [nest link](ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/sp/sp_setores_censitarios.zip). Como não queremos sair do terminal, vamos usar o __curl__ para isso.  
 
 ```terminal
-curl 'ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/rj/rj_setores_censitarios.zip' -o rj_setores_censitarios.zip
+curl \
+  'ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/rj/rj_setores_censitarios.zip' \
+  -o rj_setores_censitarios.zip
 ```
 
 Depois é dezipar a pasta
@@ -14,7 +16,7 @@ Depois é dezipar a pasta
 unzip -o rj_setores_censitarios.zip
 ```
 
-Vamos instalar o shapefile do nosso amigo Mike Bostock. Ele precisa de Node e do NPM, então se você estiver usando um Mac eu recomendo o Homebrew. Do contrário, podemos ir com o instalador da página deles mesmo.
+Vamos instalar o shapefile do nosso querido amigo Mike Bostock. Ele precisa de Node e do NPM, então se você estiver usando um Mac eu recomendo o Homebrew. Do contrário, podemos ir com o instalador da página deles mesmo.
 
 ```terminal
 npm install -g shapefile
@@ -35,13 +37,20 @@ npm install -g d3-geo-projection
 E aplicar a projeção ortográfica ao estado do Rio de Janeiro
 
 ```terminal
-geoproject 'd3.geoOrthographic().rotate([42.5, 22.5, 0]).fitSize([1000, 600], d)' < rj.json > rj-orthographic.json
+geoproject \
+  'd3.geoOrthographic().rotate([42.5, 22.5, 0]).fitSize([1000, 600], d)' \
+  < rj.json \
+  > rj-orthographic.json
 ```
 
 Para finalizar, vamos converter a projeção em SVG
 
 ```terminal
-geo2svg -w 1000 -h 600 < rj-orthographic.json > rj-orthographic.svg
+geo2svg \
+  -w 1000 \
+  -h 600 \
+  < rj-orthographic.json \
+  > rj-orthographic.svg
 ```
 
 ## Unindo os dados censitários a malha
@@ -69,7 +78,9 @@ ndjson-map 'd.Cod_setor = d.properties.CD_GEOCODI, d' \
 Vamos baixar todos os dados da amostra geral do Rio de Janeiro
 
 ```terminal
-curl 'ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/RJ_20171016.zip' -o RJ_20171016.zip
+curl \
+  'ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/RJ_20171016.zip' \
+  -o RJ_20171016.zip
 ```
 
 Dezipar os dados
@@ -87,7 +98,11 @@ npm install -g d3-dsv
 Converteremos o CSV do censo para ndjson
 
 ```terminal
-dsv2json -r ';' -n < RJ/Base\ informa\%E7oes\ setores2010\ universo\ RJ/CSV/Pessoa03_RJ.csv > rj-census.ndjson
+dsv2json \
+  -r ';' \
+  -n \
+  < RJ/Base\ informa\%E7oes\ setores2010\ universo\ RJ/CSV/Pessoa03_RJ.csv \
+  > rj-census.ndjson
 ```
 
 E uniremos o arquivo de dados do censo com a projeção ortográfica
@@ -99,22 +114,16 @@ ndjson-join 'd.Cod_setor' \
 	> rj-orthographic-census.ndjson
 ```
 
-E descobriremos a % de afro-descendentes
+E descobriremos a % da população que não se considera branca
 
 ```terminal
-ndjson-map 'd[0].properties = {african_descendents: Math.floor(1000 * (Number(d[1].V003) + Number(d[1].V005)) / d[1].V001)}, d[0]' \
+ndjson-map \
+  'd[0].properties = {non_white: 1000 - Math.floor(1000 * Number(d[1].V002) / d[1].V001)}, d[0]' \
   < rj-orthographic-census.ndjson \
-  > rj-orthographic-african-descendents.ndjson
+  > rj-orthographic-non-white.ndjson
 ```
 
-E vamos criar uma versão reduzida dos dados em JSON
-
-```terminal
-ndjson-reduce \
-  < rj-orthographic-african-descendents.ndjson \
-  | ndjson-map '{type: "FeatureCollection", features: d}' \
-  > rj-orthographic-african-descendents.json
-```
+## Colorindo o mapa
 
 instalar o D3
 
@@ -126,8 +135,8 @@ Então vamos colorir de maneira aleatória o mapa
 
 ```terminal
 ndjson-map -r d3 \
-  '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 1000])(d.properties.african_descendents), d)' \
-  < rj-orthographic-african-descendents.ndjson \
+  '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 1000])(d.properties.non_white), d)' \
+  < rj-orthographic-non-white.ndjson \
   > rj-orthographic-color.ndjson
 ```
 
@@ -149,7 +158,7 @@ Unificando os elementos em um topo
 
 ```terminal
 geo2topo -n \
-  tracts=rj-orthographic-african-descendents.ndjson \
+  tracts=rj-orthographic-non-white.ndjson \
   > rj-tracts-topo.json
 ```
 
@@ -171,16 +180,16 @@ topoquantize 1e5 \
 
 Instalar a escala cromática do D3
 
-```
+```terminal
 npm install -g d3-scale-chromatic
 ```
 
 E gera o JSON com os recortes
 
-```
+```terminal
 topo2geo tracts=- \
   < rj-tracts-topo.json \
-  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 50, 100, 250, 500, 750, 900, 950]).range(d3.schemeYlOrBr[8]), d.features.forEach(f => f.properties.fill = z(f.properties.african_descendents)), d' \
+  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]).range(d3.schemeSpectral[10]), d.features.forEach(f => f.properties.fill = z(f.properties.non_white)), d' \
   | ndjson-split 'd.features' \
   | geo2svg -n --stroke none -w 1000 -h 600 \
   > rj-tracts-threshold.svg
