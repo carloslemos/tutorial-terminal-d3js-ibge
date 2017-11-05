@@ -18,7 +18,7 @@ Depois é dezipar a pasta
 unzip -o mg_setores_censitarios.zip
 ```
 
-Vamos instalar o shapefile do nosso querido amigo Mike Bostock. Ele precisa de Node e do NPM, então se você estiver usando um Mac eu recomendo o Homebrew. Do contrário, podemos ir com o instalador da página deles mesmo.
+Vamos instalar o shapefile do nosso querido amigo Mike Bostock. Ele precisa de Node e do NPM, então se você estiver usando um Mac eu recomendo usar o Homebrew. Entretanto, você pode confiar no com o instalador da página deles mesmo.
 
 ```terminal
 npm install -g shapefile
@@ -51,8 +51,8 @@ Para finalizar, vamos converter a projeção em SVG
 geo2svg \
   -w 1000 \
   -h 600 \
-  < mg-orthographic.json \
-  > mg-orthographic.svg
+  < mg-ortho.json \
+  > mg-ortho.svg
 ```
 
 ## Unindo os dados censitários a malha
@@ -65,8 +65,8 @@ E vamos separar em um ndjson o mapa projetado
 
 ```terminal
 ndjson-split 'd.features' \
-  < sp-orthographic.json \
-  > sp-orthographic.ndjson
+  < mg-ortho.json \
+  > mg-ortho.ndjson
 ```
 
 Depois vamos mapear os códigos dos setores para bater com a coluna do CSV
