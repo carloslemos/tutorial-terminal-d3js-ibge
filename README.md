@@ -190,7 +190,7 @@ E gera o JSON com os recortes
 
 ```terminal
 topo2geo tracts=- \
-  < mg-tracts-topo.json \
+  < mg-quantized-topo.json \
   | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.rent)), d' \
   | ndjson-split 'd.features' \
   | geo2svg -n --stroke none -w 1000 -h 600 \
