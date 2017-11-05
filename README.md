@@ -118,9 +118,9 @@ E descobriremos a % da população que se considera branca
 
 ```terminal
 ndjson-map \
-  'd[0].properties = {noPublicLight: Math.floor(1000 * Number(d[1].V009) / d[1].V001)}, d[0]' \
+  'd[0].properties = {rent: Math.floor(1000 * Number(d[1].V009) / d[1].V001)}, d[0]' \
   < rj-orthographic-census.ndjson \
-  > rj-orthographic-noPublicLight.ndjson
+  > rj-orthographic-rent.ndjson
 ```
 
 ## Colorindo o mapa
@@ -135,8 +135,8 @@ Então vamos colorir de maneira aleatória o mapa
 
 ```terminal
 ndjson-map -r d3 \
-  '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 1000])(d.properties.noPublicLight), d)' \
-  < rj-orthographic-noPublicLight.ndjson \
+  '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 1000])(d.properties.rent), d)' \
+  < rj-orthographic-rent.ndjson \
   > rj-orthographic-color.ndjson
 ```
 
@@ -158,7 +158,7 @@ Unificando os elementos em um topo
 
 ```terminal
 geo2topo -n \
-  tracts=rj-orthographic-noPublicLight.ndjson \
+  tracts=rj-orthographic-rent.ndjson \
   > rj-tracts-topo.json
 ```
 
@@ -189,8 +189,8 @@ E gera o JSON com os recortes
 ```terminal
 topo2geo tracts=- \
   < rj-tracts-topo.json \
-  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.noPublicLight)), d' \
+  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.rent)), d' \
   | ndjson-split 'd.features' \
   | geo2svg -n --stroke none -w 1000 -h 600 \
-  > rj-tracts-threshold.svg
+  > rj-tracts-threshold-rent.svg
   ```
