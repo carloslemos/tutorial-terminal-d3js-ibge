@@ -101,7 +101,7 @@ Converteremos o CSV do censo para ndjson
 dsv2json \
   -r ';' \
   -n \
-  < RJ/Base\ informa\%E7oes\ setores2010\ universo\ RJ/CSV/Entorno01_RJ.csv \
+  < RJ/Base\ informa\%E7oes\ setores2010\ universo\ RJ/CSV/Domicilio01_RJ.csv \
   > rj-census.ndjson
 ```
 
@@ -118,7 +118,7 @@ E descobriremos a % da população que se considera branca
 
 ```terminal
 ndjson-map \
-  'd[0].properties = {rent: Math.floor(1000 * Number(d[1].V009) / d[1].V001)}, d[0]' \
+  'd[0].properties = {rent: Math.floor(100 * Number(d[1].V008) / d[1].V002)}, d[0]' \
   < rj-orthographic-census.ndjson \
   > rj-orthographic-rent.ndjson
 ```
@@ -135,7 +135,7 @@ Então vamos colorir de maneira aleatória o mapa
 
 ```terminal
 ndjson-map -r d3 \
-  '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 1000])(d.properties.rent), d)' \
+  '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 100])(d.properties.rent), d)' \
   < rj-orthographic-rent.ndjson \
   > rj-orthographic-color.ndjson
 ```
@@ -189,7 +189,7 @@ E gera o JSON com os recortes
 ```terminal
 topo2geo tracts=- \
   < rj-tracts-topo.json \
-  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.rent)), d' \
+  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.rent)), d' \
   | ndjson-split 'd.features' \
   | geo2svg -n --stroke none -w 1000 -h 600 \
   > rj-tracts-threshold-rent.svg
