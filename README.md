@@ -27,7 +27,7 @@ npm install -g shapefile
 Vamos convertero SHP para GeoJSON
 
 ```terminal
-shp2json 35SEE250GC_SIR.shp --encoding 'utf8' -o mg.json
+shp2json 31SEE250GC_SIR.shp --encoding 'utf8' -o mg.json
 ```
 
 Vamos instalar as projeções do D3
