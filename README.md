@@ -2,7 +2,7 @@
 Tutorial de como fazer mapas apenas com a linha de comando em D3js com os dados do IBGE
 
 ## Convertendo a malha censitária em um mapa
-Pegue os dados relativos a malha censitária do Rio de Janeiro [nest link](ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/sp/sp_setores_censitarios.zip). Como não queremos sair do terminal, vamos usar o __curl__ para isso.  
+Pegue os dados relativos a malha censitária de São Paulo. No FTP do IBGE é possível encontrar de todas as UFs em _ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/_. Como não queremos sair do terminal, vamos usar o __curl__ para isso.  
 
 ```terminal
 curl \
