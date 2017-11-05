@@ -2,18 +2,20 @@
 Tutorial de como fazer mapas apenas com a linha de comando em D3js com os dados do IBGE
 
 ## Convertendo a malha censitária em um mapa
-Pegue os dados relativos a malha censitária de São Paulo. No FTP do IBGE é possível encontrar de todas as UFs em _ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/_. Como não queremos sair do terminal, vamos usar o __curl__ para isso.  
+Pegue os dados relativos a malha censitária de São Paulo. No FTP do IBGE é possível encontrar de todas as UFs em _ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/_.  
+  
+Como não queremos sair do terminal, vamos usar o __curl__ para isso. E vamos apontar para a malha de Minas Gerais 
 
-```terminal
+```bash
 curl \
-  'ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/sp/sp_setores_censitarios.zip' \
-  -o sp_setores_censitarios.zip
+  'ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/mg/mg_setores_censitarios.zip' \
+  -o mg_setores_censitarios.zip
 ```
 
 Depois é dezipar a pasta
 
-```terminal
-unzip -o sp_setores_censitarios.zip
+```bash
+unzip -o mg_setores_censitarios.zip
 ```
 
 Vamos instalar o shapefile do nosso querido amigo Mike Bostock. Ele precisa de Node e do NPM, então se você estiver usando um Mac eu recomendo o Homebrew. Do contrário, podemos ir com o instalador da página deles mesmo.
@@ -25,7 +27,7 @@ npm install -g shapefile
 Vamos convertero SHP para GeoJSON
 
 ```terminal
-shp2json 35SEE250GC_SIR.shp --encoding 'utf8' -o sp.json
+shp2json 35SEE250GC_SIR.shp --encoding 'utf8' -o mg.json
 ```
 
 Vamos instalar as projeções do D3
@@ -39,8 +41,8 @@ E aplicar a projeção ortográfica ao estado do Rio de Janeiro
 ```terminal
 geoproject \
   'd3.geoOrthographic().rotate([42.5, 22.5, 0]).fitSize([1000, 600], d)' \
-  < sp.json \
-  > sp-orthographic.json
+  < mg.json \
+  > mg-ortho.json
 ```
 
 Para finalizar, vamos converter a projeção em SVG
@@ -49,8 +51,8 @@ Para finalizar, vamos converter a projeção em SVG
 geo2svg \
   -w 1000 \
   -h 600 \
-  < sp-orthographic.json \
-  > sp-orthographic.svg
+  < mg-orthographic.json \
+  > mg-orthographic.svg
 ```
 
 ## Unindo os dados censitários a malha
