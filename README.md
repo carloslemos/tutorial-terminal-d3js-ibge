@@ -73,8 +73,8 @@ Depois vamos mapear os códigos dos setores para bater com a coluna do CSV
 
 ```terminal
 ndjson-map 'd.Cod_setor = d.properties.CD_GEOCODI, d' \
-  < sp-orthographic.ndjson \
-  > sp-orthographic-sector.ndjson
+  < mg-ortho.ndjson \
+  > mg-ortho-sector.ndjson
 ```
 
 Vamos baixar todos os dados da amostra geral do Rio de Janeiro
@@ -104,16 +104,16 @@ dsv2json \
   -r ';' \
   -n \
   < SP/Base\ informa\%E7oes\ setores2010\ universo\ SP/CSV/Domicilio01_SP.csv \
-  > sp-census.ndjson
+  > mg-census.ndjson
 ```
 
 E uniremos o arquivo de dados do censo com a projeção ortográfica
 
 ```terminal
 ndjson-join 'd.Cod_setor' \
-  sp-orthographic-sector.ndjson \
-  sp-census.ndjson \
-  > sp-orthographic-census.ndjson
+  mg-ortho-sector.ndjson \
+  mg-census.ndjson \
+  > mg-ortho-census.ndjson
 ```
 
 E descobriremos a % da população que se considera branca
@@ -121,8 +121,8 @@ E descobriremos a % da população que se considera branca
 ```terminal
 ndjson-map \
   'd[0].properties = {rent: Math.floor(100 * Number(d[1].V008) / d[1].V002)}, d[0]' \
-  < sp-orthographic-census.ndjson \
-  > sp-orthographic-rent.ndjson
+  < mg-ortho-census.ndjson \
+  > mg-ortho-rent.ndjson
 ```
 
 ## Colorindo o mapa
@@ -138,16 +138,16 @@ Então vamos colorir de maneira aleatória o mapa
 ```terminal
 ndjson-map -r d3 \
   '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 100])(d.properties.rent), d)' \
-  < sp-orthographic-rent.ndjson \
-  > sp-orthographic-color.ndjson
+  < mg-ortho-rent.ndjson \
+  > mg-ortho-color.ndjson
 ```
 
 E vamos printá-lo num SVG
 
 ```terminal
 geo2svg -n --stroke none -w 1000 -h 600 \
-  < sp-orthographic-color.ndjson \
-  > sp-orthographic-color.svg
+  < mg-ortho-color.ndjson \
+  > mg-ortho-color.svg
 ```
 
 Instalar o TopoJSON
@@ -160,24 +160,24 @@ Unificando os elementos em um topo
 
 ```terminal
 geo2topo -n \
-  tracts=sp-orthographic-rent.ndjson \
-  > sp-tracts-topo.json
+  tracts=mg-ortho-rent.ndjson \
+  > mg-tracts-topo.json
 ```
 
 Simplificando a geometria
 
 ```terminal
 toposimplify -p 1 -f \
-  < sp-tracts-topo.json \
-  > sp-simple-topo.json
+  < mg-tracts-topo.json \
+  > mg-simple-topo.json
 ```
 
 Quantificando a geometria
 
 ```terminal
 topoquantize 1e5 \
-  < sp-simple-topo.json \
-  > sp-quantized-topo.json
+  < mg-simple-topo.json \
+  > mg-quantized-topo.json
 ```
 
 Instalar a escala cromática do D3
@@ -190,9 +190,9 @@ E gera o JSON com os recortes
 
 ```terminal
 topo2geo tracts=- \
-  < sp-tracts-topo.json \
+  < mg-tracts-topo.json \
   | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.rent)), d' \
   | ndjson-split 'd.features' \
   | geo2svg -n --stroke none -w 1000 -h 600 \
-  > sp-tracts-threshold-rent.svg
+  > mg-tracts-threshold-rent.svg
   ```
