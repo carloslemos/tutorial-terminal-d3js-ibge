@@ -81,14 +81,14 @@ Vamos baixar todos os dados da amostra geral do Rio de Janeiro
 
 ```terminal
 curl \
-  'ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/SP_Capital_20171016.zip' \
-  -o SP_20171016.zip
+  'ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/MG_20171016.zip' \
+  -o MG_20171016.zip
 ```
 
 Dezipar os dados
 
 ```terminal
-unzip -o SP_20171016.zip
+unzip -o MG_20171016.zip
 ```
 
 Depois vamos instalar o módulo de conversão de CSVs, TSVs e afins
@@ -103,7 +103,7 @@ Converteremos o CSV do censo para ndjson
 dsv2json \
   -r ';' \
   -n \
-  < SP/Base\ informa\%E7oes\ setores2010\ universo\ SP/CSV/Domicilio01_SP.csv \
+  < MG/Base\ informa\%E7oes\ setores2010\ universo\ MG/CSV/Domicilio01_MG.csv \
   > mg-census.ndjson
 ```
 
