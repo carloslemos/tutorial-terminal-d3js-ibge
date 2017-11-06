@@ -46,7 +46,7 @@ E aplicar a projeção ortográfica ao estado do Rio de Janeiro
 
 ```bash
 geoproject \
-  'd3.geoOrthographic().rotate([42.5, 22.5, 0]).fitSize([1000, 600], d)' \
+  'd3.geoOrthographic().rotate([54, 14, -2]).fitSize([1000, 600], d)' \
   < rj.json \
   > rj-ortho.json
 ```
