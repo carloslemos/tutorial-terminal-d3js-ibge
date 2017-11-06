@@ -10,7 +10,7 @@ Pegue os dados relativos a malha censitária de Minas Gerais. No FTP do IBGE
 Como não queremos sair do terminal, vamos usar o __curl__ para isso. E vamos
 apontar para a malha de Minas Gerais 
 
-```terminal
+```bash
 curl \
   'ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2010/setores_censitarios_shp/mg/mg_setores_censitarios.zip' \
   -o mg_setores_censitarios.zip
@@ -18,7 +18,7 @@ curl \
 
 Depois é dezipar a pasta
 
-```terminal
+```bash
 unzip -o mg_setores_censitarios.zip
 ```
 
@@ -26,25 +26,25 @@ E vamos nós instalar mais um pacote, o shapefile. Ele precisa de
 Node e do NPM, então se você estiver usando um Mac eu recomendo usar o Homebrew. 
 Entretanto, você pode confiar  com o instalador da página deles mesmo.
 
-```terminal
+```bash
 npm install -g shapefile
 ```
 
 Vamos converter o SHP para GeoJSON
 
-```terminal
+```bash
 shp2json 31SEE250GC_SIR.shp --encoding 'utf8' -o mg.json
 ```
 
 Vamos instalar as projeções do D3
 
-```terminal
+```bash
 npm install -g d3-geo-projection
 ```
 
 E aplicar a projeção ortográfica ao estado do Rio de Janeiro
 
-```terminal
+```bash
 geoproject \
   'd3.geoOrthographic().rotate([42.5, 22.5, 0]).fitSize([1000, 600], d)' \
   < mg.json \
@@ -53,7 +53,7 @@ geoproject \
 
 Para finalizar, vamos converter a projeção em SVG
 
-```terminal
+```bash
 geo2svg \
   -w 1000 \
   -h 600 \
@@ -63,13 +63,13 @@ geo2svg \
 
 ## Unindo os dados censitários a malha
 
-```terminal
+```bash
 npm install -g ndjson-cli
 ```
 
 E vamos separar em um ndjson o mapa projetado
 
-```terminal
+```bash
 ndjson-split 'd.features' \
   < mg-ortho.json \
   > mg-ortho.ndjson
@@ -77,7 +77,7 @@ ndjson-split 'd.features' \
 
 Depois vamos mapear os códigos dos setores para bater com a coluna do CSV
 
-```terminal
+```bash
 ndjson-map 'd.Cod_setor = d.properties.CD_GEOCODI, d' \
   < mg-ortho.ndjson \
   > mg-ortho-sector.ndjson
@@ -85,7 +85,7 @@ ndjson-map 'd.Cod_setor = d.properties.CD_GEOCODI, d' \
 
 Vamos baixar todos os dados da amostra geral do Rio de Janeiro
 
-```terminal
+```bash
 curl \
   'ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/MG_20171016.zip' \
   -o MG_20171016.zip
@@ -93,19 +93,19 @@ curl \
 
 Dezipar os dados
 
-```terminal
+```bash
 unzip -o MG_20171016.zip
 ```
 
 Depois vamos instalar o módulo de conversão de CSVs, TSVs e afins
 
-```terminal
+```bash
 npm install -g d3-dsv
 ```
 
 Converteremos o CSV do censo para ndjson
 
-```terminal
+```bash
 dsv2json \
   -r ';' \
   -n \
@@ -115,7 +115,7 @@ dsv2json \
 
 E uniremos o arquivo de dados do censo com a projeção ortográfica
 
-```terminal
+```bash
 ndjson-join 'd.Cod_setor' \
   mg-ortho-sector.ndjson \
   mg-census.ndjson \
@@ -124,7 +124,7 @@ ndjson-join 'd.Cod_setor' \
 
 E descobriremos a % da população que se considera branca
 
-```terminal
+```bash
 ndjson-map \
   'd[0].properties = {rent: Math.floor(100 * Number(d[1].V008) / d[1].V002)}, d[0]' \
   < mg-ortho-census.ndjson \
@@ -135,13 +135,13 @@ ndjson-map \
 
 instalar o D3
 
-```terminal
+```bash
 npm install -g d3
 ```
 
 Então vamos colorir de maneira aleatória o mapa
 
-```terminal
+```bash
 ndjson-map -r d3 \
   '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 100])(d.properties.rent), d)' \
   < mg-ortho-rent.ndjson \
@@ -150,7 +150,7 @@ ndjson-map -r d3 \
 
 E vamos printá-lo num SVG
 
-```terminal
+```bash
 geo2svg -n --stroke none -w 1000 -h 600 \
   < mg-ortho-color.ndjson \
   > mg-ortho-color.svg
@@ -158,13 +158,13 @@ geo2svg -n --stroke none -w 1000 -h 600 \
 
 Instalar o TopoJSON
 
-```terminal
+```bash
 npm install -g topojson
 ```
 
 Unificando os elementos em um topo
 
-```terminal
+```bash
 geo2topo -n \
   tracts=mg-ortho-rent.ndjson \
   > mg-tracts-topo.json
@@ -172,7 +172,7 @@ geo2topo -n \
 
 Simplificando a geometria
 
-```terminal
+```bash
 toposimplify -p 1 -f \
   < mg-tracts-topo.json \
   > mg-simple-topo.json
@@ -180,7 +180,7 @@ toposimplify -p 1 -f \
 
 Quantificando a geometria
 
-```terminal
+```bash
 topoquantize 1e5 \
   < mg-simple-topo.json \
   > mg-quantized-topo.json
@@ -188,13 +188,13 @@ topoquantize 1e5 \
 
 Instalar a escala cromática do D3
 
-```terminal
+```bash
 npm install -g d3-scale-chromatic
 ```
 
 E gera o JSON com os recortes
 
-```terminal
+```bash
 topo2geo tracts=- \
   < mg-simple-topo.json \
   | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.rent)), d' \
