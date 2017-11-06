@@ -122,47 +122,37 @@ ndjson-join 'd.Cod_setor' \
   > rj-ortho-census.ndjson
 ```
 
-E descobriremos a % da população que não tem acesso a iluminação pública
+Por último descobriremos a % da população que não tem acesso a iluminação
+pública naquele setor
 
 ```bash
 ndjson-map \
-  'd[0].properties = {light: Math.floor(100 * (Number(d[1].V009) + Number(d[1].V011)) / d[1].V001)}, d[0]' \
+  'd[0].properties = {light: Math.floor(100 * (Number(d[1].V009) + Number(d[1].V011) + Number(d[1].V013)) / d[1].V001)}, d[0]' \
   < rj-ortho-census.ndjson \
   > rj-ortho-light.ndjson
 ```
 
-## Colorindo o mapa
+## Compactando o mapa e gerando uma visualização
 
-instalar o D3
+Vamos instalar o D3
 
 ```bash
 npm install -g d3
 ```
 
-Então vamos colorir de maneira aleatória o mapa
-
-```bash
-ndjson-map -r d3 \
-  '(d.properties.fill = d3.scaleSequential(d3.interpolateViridis).domain([0, 100])(d.properties.light), d)' \
-  < rj-ortho-light.ndjson \
-  > rj-ortho-color.ndjson
-```
-
-E vamos printá-lo num SVG
-
-```bash
-geo2svg -n --stroke none -w 1000 -h 600 \
-  < rj-ortho-color.ndjson \
-  > rj-ortho-color.svg
-```
-
-Instalar o TopoJSON
+E o TopoJSON
 
 ```bash
 npm install -g topojson
 ```
 
-Unificando os elementos em um topo
+E escala [cromática do D3](https://github.com/d3/d3-scale-chromatic)
+
+```bash
+npm install -g d3-scale-chromatic
+```
+
+Unificaremos os elementos em um topojson, que é um arquivo mais leve que o GeoJSON
 
 ```bash
 geo2topo -n \
@@ -170,7 +160,7 @@ geo2topo -n \
   > rj-tracts-topo.json
 ```
 
-Simplificando a geometria
+Simplificaremos sua geometria
 
 ```bash
 toposimplify -p 1 -f \
@@ -178,7 +168,7 @@ toposimplify -p 1 -f \
   > rj-simple-topo.json
 ```
 
-Quantificando a geometria
+Quantizaremos a geometria simplificada
 
 ```bash
 topoquantize 1e5 \
@@ -186,18 +176,12 @@ topoquantize 1e5 \
   > rj-quantized-topo.json
 ```
 
-Instalar a escala cromática do D3
-
-```bash
-npm install -g d3-scale-chromatic
-```
-
-E gera o JSON com os recortes
+Com este novo arquivo geraremos o mapa com uma 
 
 ```bash
 topo2geo tracts=- \
-  < rj-simple-topo.json \
-  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]).range(d3.schemeYlOrRd[9]), d.features.forEach(f => f.properties.fill = z(f.properties.light)), d' \
+  < rj-quantized-topo.json \
+  | ndjson-map -r d3 -r d3=d3-scale-chromatic 'z = d3.scaleThreshold().domain([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]).range(d3.schemeYlGnBu[9]), d.features.forEach(f => f.properties.fill = z(f.properties.light)), d' \
   | ndjson-split 'd.features' \
   | geo2svg -n --stroke none -w 1000 -h 600 \
   > rj-tracts-threshold-light.svg
