@@ -176,7 +176,9 @@ topoquantize 1e5 \
   > rj-quantized-topo.json
 ```
 
-Com este novo arquivo geraremos o mapa com uma 
+Com este novo arquivo mais leve, geraremos o mapa com uma escala cromática que 
+parte do amarelo até o azul (passando obviamente pelo verde). E aqui estamos com 
+seu mapa em SVG. 
 
 ```bash
 topo2geo tracts=- \
